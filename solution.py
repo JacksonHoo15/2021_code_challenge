@@ -1,26 +1,28 @@
-def solution(floor):
+def shortest_path_through_maze(floor):
     """
+    Return the length of the shortest path through maze, not switching any pieces.
     >>> floor1 = [ [0, 1], [0, 0] ]
-    >>> solution(floor1)
+    >>> shortest_path_through_maze(floor1)
     3
     >>> floor2 = [ [0, 1, 1, 0], [0, 0, 0, 1], [1, 1, 0, 0], [1, 1, 1, 0] ]
-    >>> solution(floor2)
+    >>> shortest_path_through_maze(floor2)
     7
     >>> floor3 = [
     ... [0, 1, 1, 0],
     ... [0, 0, 0, 0],
     ... [1, 0, 1, 0],
     ... [1, 1, 1, 0] ]
-    >>> solution(floor3)
+    >>> shortest_path_through_maze(floor3)
     7
     >>> floor4 = [
     ... [0, 0, 0, 0],
     ... [0, 0, 1, 1],
     ... [1, 0, 1, 0],
     ... [1, 0, 0, 0] ]
-    >>> solution(floor4)
+    >>> shortest_path_through_maze(floor4)
     7
     """
+
     height = len(floor)
     width = len(floor[height - 1])
 
@@ -34,6 +36,8 @@ def solution(floor):
     step = 0    # below will fill matrix with with steps to each accessible point from start to end
     while maze_num_path[-1][-1] == 0: # checks to make sure end point is zero ie have not reached end yet
         step += 1
+        if step > max([max(x) for x in maze_num_path]) + 3:     # check for impossible maze
+            return 99999999999999999    # if impossible return high count as we look for lowest
         for i in range(len(maze_num_path)):  # i == height
             for j in range(len(maze_num_path[i])):  # j == width
                 if maze_num_path[i][j] == step:
@@ -48,7 +52,7 @@ def solution(floor):
 
     # find shortest path working backwards
     step = maze_num_path[-1][-1]
-    the_path = [(i, j)]  # list of indexes on the path
+    the_path = [(i, j)]  # list of indexes on the path, 0 <= i < height, 0 <= j < width
     while step > 1:
         if i > 0 and maze_num_path[i - 1][j] == step - 1:   # step up
             i, j = i - 1, j
@@ -68,8 +72,7 @@ def solution(floor):
             step -= 1
     return len(the_path)
 
-
-    # #  Attempt 1
+    # Attempt 1 unneeded code can be deleted
     # j = 0   # width
     # i = 0   # height
     # count = 1
@@ -91,6 +94,7 @@ def solution(floor):
     #         count += 1
     # return count
 
+    # pseudo code
     # repeat below until at bottom right most corner
         # is the spot to the right a wall or floor
         # is the spot to the bottom a wall or floor
@@ -99,6 +103,28 @@ def solution(floor):
         # physically move and increment count once i know it is a floor
 
 
-if __name__ == '__main__':
-    import doctest
-    doctest.testmod()
+def solution(floor):
+    """
+    Return the length of the shortest path threw maze floor, with the ability
+    to switch one piece from wall to floor.
+    >>> floor3 = [[0, 1, 1, 0], [0, 1, 0, 1], [1, 1, 0, 0],[1, 1, 1, 0]]
+    >>> solution(floor3)
+    7
+    """
+
+    height = len(floor)
+    width = len(floor[height - 1])
+
+    # brute force swtich every wall peice of maze and try finding shortest solution if possible
+    # accumulate all results return lowest
+
+    path_lengths = []
+    for h in range(height):
+        for w in range(width):
+            if floor[h][w] == 1:
+                copy_floor = [x[:] for x in floor]  # make a deep copy of original map to avoid aliasing
+                copy_floor[h][w] = 0
+
+                # below calls helper function to find shortest path through new maze
+                path_lengths.append(shortest_path_through_maze(copy_floor))
+    return min(path_lengths)
